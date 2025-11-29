@@ -2,9 +2,16 @@
 import json  # Import the built-in JSON library for parsing LLM output
 import ollama  # Import the ollama client for connecting to the local LLM
 
-# STEP 2: Data/Input Preparation
-# Prompt the user to enter a topic for the quiz
-topic = input("Enter a topic for the quiz (e.g., 'The French Revolution'): ")
+# STEP 2: Data/Input Preparation (Updated with validation loop)
+# Loop until the user provides a non-empty topic
+while True:
+    topic = input(
+        "Enter a topic for the quiz (e.g., 'The French Revolution'): "
+    ).strip()
+    if topic:
+        break
+    print("Topic cannot be empty. Please enter a subject.")
+
 print(f"Generating quiz for topic: '{topic}'... Please wait.")
 
 
@@ -39,10 +46,16 @@ except json.JSONDecodeError:
     print("\n❌ ERROR: LLM failed to output valid JSON.")
     print("Raw Output (for debugging): \n" + raw_response)
 
+# STEP 6: File Saving Logic (Modifies the existing 'else' block)
 else:
-    # STEP 5 (Part 2): This runs ONLY if the JSON parsing succeeds
-    print("\n✅ Successfully generated and parsed Quiz data:")
-    # Print the first question to confirm data integrity
+    # Use the topic to create a clean filename
+    filename = topic.lower().replace(" ", "_").strip() + "_quiz.json"
+
+    # Write the Python dictionary object directly to a file as JSON
+    with open(filename, "w") as f:
+        json.dump(quiz_json, f, indent=4)
+
+    # Print success messages
+    print("\n✅ Successfully generated and parsed Quiz data!")
     print(f"Question 1: {quiz_json['quiz'][0]['question']}")
-    print("-" * 30)
-    print("All questions:", [item["question"] for item in quiz_json["quiz"]])
+    print(f"💾 Quiz saved to: {filename}")
